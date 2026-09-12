@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { soundFx } from '../utils/sound.js';
+import { soundFx, bgm } from '../utils/sound.js';
 
 const ThemeContext = createContext();
 
@@ -20,12 +20,15 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('life_rpg_active_theme', newTheme);
     document.documentElement.classList.remove('theme-h', 'theme-g');
     document.documentElement.classList.add(newTheme);
+    // Crossfade BGM to new theme
+    bgm.switchTheme(newTheme);
   };
 
   const toggleSound = () => {
     soundFx.bootstrap(); // Unlock AudioContext on this user gesture
     const muted = soundFx.toggleMute();
     setIsMuted(muted);
+    bgm.onMuteChange(muted); // Stop or resume BGM
     if (!muted) {
       soundFx.playClick();
     }
@@ -37,9 +40,12 @@ export function ThemeProvider({ children }) {
   }, [theme]);
 
   // Unlock AudioContext on FIRST click anywhere in the app (browser autoplay policy)
+  // Then start BGM immediately after unlocking
   useEffect(() => {
     const unlock = () => {
       soundFx.bootstrap();
+      // Start BGM after a short delay to let AudioContext fully resume
+      setTimeout(() => bgm.start(theme), 400);
       document.removeEventListener('click', unlock, { capture: true });
       document.removeEventListener('keydown', unlock, { capture: true });
     };
@@ -48,6 +54,7 @@ export function ThemeProvider({ children }) {
     return () => {
       document.removeEventListener('click', unlock, { capture: true });
       document.removeEventListener('keydown', unlock, { capture: true });
+      bgm.stop(300); // Stop BGM on unmount (page leave)
     };
   }, []);
 
