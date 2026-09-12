@@ -255,7 +255,14 @@ export const completeQuest = async (req, res) => {
     );
 
     // Calculate department attribute increment
-    const attributeColumn = quest.attribute_type || 'knowledge_xp';
+    let attributeColumn = quest.attribute_type || 'knowledge_xp';
+    if (!attributeColumn.endsWith('_xp')) {
+      attributeColumn = `${attributeColumn}_xp`;
+    }
+    const validCols = ['tech_xp', 'knowledge_xp', 'strength_xp', 'wellness_xp', 'economy_xp', 'culture_xp', 'community_xp'];
+    if (!validCols.includes(attributeColumn)) {
+      attributeColumn = 'knowledge_xp';
+    }
     const currentAttrVal = Number(progression[attributeColumn] || 0);
     const newAttrVal = currentAttrVal + Number(quest.attribute_gain);
 
