@@ -23,6 +23,7 @@ export function ThemeProvider({ children }) {
   };
 
   const toggleSound = () => {
+    soundFx.bootstrap(); // Unlock AudioContext on this user gesture
     const muted = soundFx.toggleMute();
     setIsMuted(muted);
     if (!muted) {
@@ -34,6 +35,21 @@ export function ThemeProvider({ children }) {
     document.documentElement.classList.remove('theme-h', 'theme-g');
     document.documentElement.classList.add(theme);
   }, [theme]);
+
+  // Unlock AudioContext on FIRST click anywhere in the app (browser autoplay policy)
+  useEffect(() => {
+    const unlock = () => {
+      soundFx.bootstrap();
+      document.removeEventListener('click', unlock, { capture: true });
+      document.removeEventListener('keydown', unlock, { capture: true });
+    };
+    document.addEventListener('click', unlock, { capture: true, once: true });
+    document.addEventListener('keydown', unlock, { capture: true, once: true });
+    return () => {
+      document.removeEventListener('click', unlock, { capture: true });
+      document.removeEventListener('keydown', unlock, { capture: true });
+    };
+  }, []);
 
   // Helper dynamic classes based on active theme
   const isUpsideDown = theme === THEMES.THEME_H;
