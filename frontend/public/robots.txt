@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /features
+Allow: /how-it-works
+Allow: /faq
+Allow: /about
+Allow: /login
+Allow: /signup
+
+# Disallow private authenticated areas and backend APIs
+Disallow: /app/
+Disallow: /api/
+
+Sitemap: https://buildyourcity.app/sitemap.xml
